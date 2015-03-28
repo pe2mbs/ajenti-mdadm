@@ -19,13 +19,13 @@
 # ---------------------------------------------------------------------------
 #
 __author__      = "Marc Bertens"
-__copyright__   = "Copyright 2015, Ajenti MDADM plugin"
+__copyright__   = "Copyright 2015, GNU Affero General Public License"
 __credits__     = ["Marc Bertens"]
 __license__     = "AGPL"
 __version__     = "1.0.0"
 __maintainer__  = "Marc Bertens"
 __email__       = "m.bertens@pe2mbs.nl"
-__status__      = "Production"
+__status__      = "Alpha"
 
 from ajenti.api import *
 from ajenti.plugins import *
@@ -41,6 +41,38 @@ info = PluginInfo(
         FileDependency( '/proc/mdstat' ),
     ],
 )
+
+def GetVersion():
+    return __version__
+# end def
+
+def GetAuthor():
+    return __author__
+# end def
+
+def GetCopyright():
+    return __copyright__
+# end def
+
+def GetMaintainer():
+    return __maintainer__
+# end def
+
+def GetEmail():
+    return __email__
+# end def
+
+def GetStatus():
+    return __status__
+# end def
+
+def GetPluginVersion( package = None ):
+    text = "v%s" % ( __version__ )
+    if not __status__ in [ "Production/Stable", "Mature" ]:
+        text += " (%s)" % ( __status__ )
+    # end if
+    return text
+# end def
 
 def init():
     import api
