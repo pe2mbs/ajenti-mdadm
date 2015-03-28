@@ -23,19 +23,8 @@ import time
 import subprocess
 import logging
 import ajenti
-from ajenti.api                 import *
-from ajenti.ui                  import UIElement, p
 
 log = logging.getLogger()
-
-@p('plugin')
-@p('title')
-@p('version')
-@p('author')
-@p('email')
-@plugin
-class PluginHeader( UIElement ):
-    typeid = 'mdadm:header'
 
 class RAID_Device( object ):
     def __init__( self, mdadm ):
@@ -65,20 +54,6 @@ class NewRaidDevice( object ):
             # the should be /dev/md<number>
             self.device_name = "%s%i" % ( name[ 0:7 ], int( name[ 7: ] ) + 1 )
         # end if
-        return
-    # end def
-
-    def Dump( self, log ):
-        log.debug( "device: %s" % ( self.device_name ) )
-        log.debug( "meta_data: %s" % ( self.meta_data ) )
-        log.debug( "device_type: %s" % ( self.device_type ) )
-        log.debug( "email: %s" % ( self.email ) )
-        log.debug( "enable_mon: %s" % ( self.enable_mon ) )
-        log.debug( "new_devices: %s" % ( repr( self.new_devices ) ) )
-        for item in self.new_devices:
-            log.debug( "storage.name: %s" % ( item.drive_name ) )
-            log.debug( "storage.type: %s" % ( item.drive_type ) )
-        # next
         return
     # end def
 # end class
@@ -166,29 +141,6 @@ class BlockDevice( object ):
         self.valid = True
         return
     # end def
-
-    def Dump( self ):
-        log.debug( "    disk-device: %s (%i) %i.%i - %s, %s" % ( self.name, self.id,
-                                                             self.major, self.minor,
-                                                             self.state, self.substate ) )
-        if self.UUID <> "":
-            log.debug( "    Magic        : %s" % ( self.magic ) )
-            log.debug( "    Feature Map  : %X" % ( self.featureMap ) )
-            log.debug( "    Data Offset  : %s" % ( self.dataOffset ) )
-            log.debug( "    Super Offset : %s" % ( self.superOffset ) )
-            log.debug( "    Checksum     : %s" % ( self.checksum ) )
-            if self.layout <> "":
-                log.debug( "    Layout       : %s" % ( self.layout ) )
-            # end if
-            if self.chunkSize <> "":
-                log.debug( "    Chunk Size   : %s" % ( self.chunkSize ) )
-            # end if
-            log.debug( "    Device Role  : %s" % ( self.role ) )
-            log.debug( "    UUID         : %s" % ( self.UUID ) )
-        # end if
-        print
-        return
-    # end if
 
     @property
     def State( self ):
@@ -302,14 +254,12 @@ class DeviceStatus( object ):
                         # print( items )
                         for device in self.devices:
                             if device.name == items[ len( items ) - 1 ]:
-                                log.debug( "Update new BlockDevice( %s )" % ( repr( items ) ) )
                                 dev = device
                                 dev.Set( items )
                                 dev.Update()
                             # end if
                         # next
                         if dev is None:
-                            log.debug( "Adding new BlockDevice( %s )" % ( repr( items ) ) )
                             dev = BlockDevice( items )
                             dev.Update()
                             self.devices.append( dev )
@@ -376,46 +326,6 @@ class DeviceStatus( object ):
         return self.progress / 100
     # end if
 
-    def Dump( self ):
-        log.debug( "-" * 60 )
-        log.debug( "  Device:           %s" % ( self.name ) )
-        log.debug( "  Status:           %s%s" % ( self.status, "" if not self.resync else ", syncing: %.2f%%" % ( self.progress ) ) )
-        log.debug( "  Type:             %s" % ( self.type ) )
-        log.debug( "  Version:          %s" % ( self.version ) )
-        log.debug( "  Total devices:    %i" % ( self.totalDevices ) )
-        log.debug( "  RAID devices:     %i" % ( self.raidDevices ) )
-        log.debug( "  Active devices:   %i" % ( self.activeDevices ) )
-
-        log.debug( "  Working Devices:  %i" % ( self.workingDevices ) )
-        log.debug( "  Failed Devices:   %i" % ( self.failedDevices ) )
-        log.debug( "  Spare Devices:    %i" % ( self.spareDevices ) )
-
-        log.debug( "  Creation Time:    %s" % ( self.creationTime ) )
-        log.debug( "  Update Time:      %s" % ( self.updateTime ) )
-
-        log.debug( "  Array Size:       %i" % ( self.arraySize ) )
-        log.debug( "  Used Devive Size: %i" % ( self.usedDevSize ) )
-
-        log.debug( "  Persistence:      %s" % ( self.persistence ) )
-        log.debug( "  Host Name:        %s" % ( self.hostName ) )
-        log.debug( "  UUID:             %s" % ( self.UUID ) )
-        log.debug( "  Events:           %i" % ( self.events ) )
-
-        log.debug( '  %s' % ( "-" * 30 ) )
-        for idx in range( 0, len( self.devices ) ):
-            dev = self.devices[ idx ]
-            if not dev is None:
-                dev.Dump()
-            # end if
-        # next
-        log.debug( '  %s' % ( "-" * 30 ) )
-        if self.resync or self.checking:
-            log.debug( "  Progress:     %.2f %%" % ( self.progress ) )
-        # end if
-        print
-        return
-    # end def
-
     @property
     def degraded(self):
         for idx in range( 0, len( self.devices ) ):
@@ -439,6 +349,7 @@ class MdadmStatus( object ):
         self.Personalities  = []
         self.UnusedDevices  = []
         self.Devices        = []
+        self.IO_Controller  = ''
         self.configFile     = self.default_conf_location
         if ajenti.platform_unmapped == 'ubuntu':
             self.configFile     = self.ubuntu_conf_location
@@ -446,23 +357,25 @@ class MdadmStatus( object ):
         return
     # end def
 
-    def Dump( self ):
-        log.debug( 'Personalities: %s' % ( self.Personalities ) )
-        for device in self.Devices:
-            device.Dump()
-        # next
-        log.debug( 'UnusedDevices: %s' % ( self.UnusedDevices ) )
+    def SetValue( self, line ):
+        name, value = line.split(':')
+        name = name.strip(' ').replace('/','').replace(' ','_')
+        value = value.strip(' ')
+        setattr( self, name, value )
         return
     # end def
 
     def Update( self ):
-        """
         process = subprocess.Popen( [ "mdadm", "--detail-platform" ],
                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE )
         out, err = process.communicate()
-        log.debug( "Detail-platform: [%s]" % ( out ) )
-        log.debug( "err: %s" % ( err ) )
-        """
+        lines = out.splitlines( False )
+        del lines[ 0 ]
+        for line in lines:
+            self.SetValue( line )
+        # next
+        log.debug( "I/O Controller: %s" % ( self.IO_Controller ) )
+
         mdstat  = open('/proc/mdstat').read().splitlines( False )
         self.Personalities  = []
         self.UnusedDevices  = []
@@ -481,19 +394,6 @@ class MdadmStatus( object ):
             if len( cols ) == 1:
                 # belongs to current device
                 data = cols[ 0 ].replace( '  ',  ' ' ).strip( ' ' ).split( ' ' )
-                #log.debug( 'data: %s' % ( repr( data ) ) )
-                """
-                if len( data ) > 1 and data[ 1 ] in ['resync', 'recovery']:
-                    print( 'resync/recovery: %s' % ( repr( data ) ) )
-                    #obj[ 'resync' ]     = True
-                    #obj.progress        = float( data[ 3 ].replace( '%', '' ) )
-                # end if
-                if len( data ) > 1 and data[ 1 ] in [ "check" ]:
-                    print( 'check: %s' % ( repr( data ) ) )
-                    #obj[ 'checking' ]   = True
-                    #obj.progress        = float( data[ 3 ].replace( '%', '' ) )
-                # end if
-                """
             else:
                 if cols[ 0 ] == 'Personalities ':
                     data = cols[ 1 ].strip( ' ' ).replace( '[', '' ).replace( ']', '' )
@@ -544,7 +444,6 @@ class MdadmStatus( object ):
             err = out
             out = tmp
         # end if
-        log.debug( "out: %s\nerr: %s" % ( out, err ) )
         return ( out, err )
     # end def
 
@@ -588,7 +487,6 @@ class MdadmStatus( object ):
             # next
         # end if
         startedMsg = "mdadm: array %s started." % ( dNname )
-        log.debug( "startedMsg: %s" % ( startedMsg ) )
         out, err = self.__execute( cmd )
         if startedMsg in out:
             log.debug( "Status: %s " % ( startedMsg ) )
@@ -608,7 +506,7 @@ class MdadmStatus( object ):
     def getVersion( self ):
         if self.version is None:
             out, err = self.__execute( [ 'mdadm', '--version' ] )
-            self.version = out.replace( 'mdadm - ', '' )
+            self.version = out.replace( 'mdadm - ', '' ).strip()
         # end if
         return self.version
     # end def
