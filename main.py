@@ -20,11 +20,12 @@
 #
 import logging
 
-from ajenti.api                 import *
-from ajenti.plugins.main.api    import SectionPlugin
-from ajenti.ui                  import on, p, UIElement
-from ajenti.ui.binder           import Binder
-from api                        import getMdadmStatus, RAID_Device, NewRaidDevice, PluginHeader
+from ajenti.api                     import *
+from ajenti.plugins.mdadm         	import GetPluginVersion, GetAuthor, GetEmail, GetCopyright
+from ajenti.plugins.main.api        import SectionPlugin
+from ajenti.ui                      import on, p, UIElement
+from ajenti.ui.binder               import Binder
+from api                            import getMdadmStatus, RAID_Device, NewRaidDevice
 
 @plugin
 class RAID( SectionPlugin ):
@@ -38,14 +39,11 @@ class RAID( SectionPlugin ):
 
     def getPartions( self ):
         data = open( '/proc/partitions' ).readlines( )
-        #self.log.debug( "partions: %s" % ( repr( data ) ) )
         data = data[ 2: ]
         device_names = []
         for device in self.mdadm.Devices:
-            self.log.debug( "device: %s" % ( device.name ) )
             device_names.append( device.name )
             for drive in device.devices:
-                self.log.debug( "drive: %s" % ( drive.name ) )
                 device_names.append( drive.name )
             # next
         # next
@@ -53,7 +51,6 @@ class RAID( SectionPlugin ):
         for line in data:
             line = line.strip( ' ' ).replace( '    ', ' ' ).replace( '   ', ' ' ).replace( '  ', ' ' ).replace( '\n', '' )
             cols = line.split( ' ' )
-            #self.log.debug( "cols: %s" % ( repr( cols ) ) )
             if len( cols ) == 4:
                 if not "/dev/%s" % ( cols[ 3 ] ) in device_names:
                     partions.append( "/dev/%s" % ( cols[ 3 ] ) )
@@ -66,7 +63,6 @@ class RAID( SectionPlugin ):
 
     def init(self):
         self.log        = logging.getLogger()
-        self.log.setLevel(10)
         self.title      = _( 'MDADM' )
         self.icon       = 'hdd'
         self.category   = _( 'System' )
@@ -118,11 +114,13 @@ class RAID( SectionPlugin ):
         self.TabBinders.append( ( self.NewRaid, None, Binder( self.NewRaid, newRaidTab ) ) )
         self.find( 'onupdate' ).on('click', self.onUpdate )
         header = self.find( 'header' )
-        header.version  = self.mdadm.getVersion()
-        header.title    = 'RAID'
-        header.plugin   = 'mdadm'
-        header.author   = 'PE2MBS - Marc Bertens'
-        header.email    = '<aplugins@pe2mbs.nl>'
+        header.version  	= self.mdadm.getVersion()
+        header.title    	= 'RAID'
+        header.plugin   	= 'mdadm'
+        header.author   	= GetAuthor()
+        header.pluginversion= GetPluginVersion()
+        header.email    	= GetEmail()
+        header.copyright	= GetCopyright()
         tabs = self.find( 'insert_tabs' )
 
         def post_drive_device( obj, coll, item, ui ):
@@ -154,13 +152,9 @@ class RAID( SectionPlugin ):
     # end def
 
     def on_createNewRaid( self ):
-        self.log.debug( "Create NEW RAID device" )
-        self.NewRaid.Dump( self.log )
-
         binder = self.TabBinders[ 0 ][ 2 ]
         binder.update()
         binder.setup( self.TabBinders[ 0 ][ 0 ] ).populate()
-
         active_devices  = []
         spare_devices   = []
         for dev in self.NewRaid.new_devices:
@@ -174,7 +168,7 @@ class RAID( SectionPlugin ):
                                 self.NewRaid.meta_data, active_devices, spare_devices,
                                 ( self.NewRaid.enable_mon, self.NewRaid.email ) )
         if status:
-            if "error" in out:
+            if "error" in msg:
                 self.context.notify( 'error', msg )
             else:
                 self.context.notify( 'info', msg )
@@ -237,7 +231,6 @@ class RAID( SectionPlugin ):
     # end def
 
     def on_stopDevice( self, device ):
-        self.log.debug( "stop device: %s" % ( repr( device.name ) ) )
         tabs    = self.find( 'insert_tabs' )
         devTab  = tabs.find( device.name )
         tabs.remove( devTab )
@@ -248,13 +241,11 @@ class RAID( SectionPlugin ):
         adn             = newRaidTab.find( 'active_device_names' )
         adn.values      = adn.labels = self.getPartions()
         tabs.active     = 0
-
         self.refresh()
         return
     # end def
 
     def on_startDevice( self, device ):
-        self.log.debug( "start device: %s" % ( repr( device.name ) ) )
         self.mdadm.startDevice( device.name )
         return
     # end def
@@ -303,19 +294,14 @@ class RAID( SectionPlugin ):
     # end def
 
     def onUpdate( self ):
-        self.log.debug( "Update MDADM screen" )
         self.refresh()
         return
     # end def
 
     def refresh( self ):
-        self.log.debug( "Refresh MDADM screen" )
-        # self.mdadm.Update()
         for container, tab, binder in self.TabBinders:
             if not tab is None:
-                self.log.debug( "Refresh MDADM device %s" % ( container.name ) )
                 container.Update()
-                self.log.debug( "Update device tab %s" % ( container.name ) )
             # end if
             if not container is None:
                 binder.setup( container ).populate()

@@ -182,15 +182,21 @@ class DeviceStatus( object ):
         self.events             = 0
         self.progress           = 0.0
         self.valid              = False
+        self.__LastUpdate       = 0
         return
     # end def
 
     def Update( self ):
+        currentTime = time.time()
+        if self.__LastUpdate == 0:
+            pass
+        elif self.__LastUpdate > currentTime - 10:
+            return
+        # end if
+        self.__LastUpdate = currentTime
         process = subprocess.Popen( [ "mdadm", "-D", "%s" % ( self.name ) ],
                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE )
         out, err = process.communicate()
-        #log.debug( out )
-        #log.debug( err )
         out = out.splitlines()
         for device in self.devices:
             device.valid = False
@@ -244,12 +250,10 @@ class DeviceStatus( object ):
                    self.progress = float( cols[ 1 ].replace( '% complete', '' ) )
                 # end if
             elif len( cols ) > 0:
-                #log.debug( "cols: %s" % ( repr( cols ) ) )
                 if len( cols[ 0 ] ) > 0 and cols[ 0 ][ 0 ].isdigit():
                     dev = None
                     cols[ 0 ] = cols[ 0 ].replace( '        ', ';' ).replace( '       ', ';' ).replace( '      ', ';' ).replace( '   ', ';' ).replace( ' ', ';' )
                     items = cols[ 0 ].split( ';' )
-                    #log.debug( "items: %s" % ( repr( items ) ) )
                     if items[ len( items ) - 1 ] != 'removed':
                         # print( items )
                         for device in self.devices:
@@ -308,8 +312,6 @@ class DeviceStatus( object ):
 
     @property
     def stateText(self):
-        log.debug( 'status = %s, resync = %s, checking = %s, degraded = %s, progress  = %.2f' % (
-                    self.status, self.resync, self.checking, self.degraded, self.progress ) )
         status = ",".join( self.status )
         if self.resync or self.checking:
             if self.resync:
@@ -349,6 +351,7 @@ class MdadmStatus( object ):
         self.Personalities  = []
         self.UnusedDevices  = []
         self.Devices        = []
+        self.__LastUpdate   = 0
         self.IO_Controller  = ''
         self.configFile     = self.default_conf_location
         if ajenti.platform_unmapped == 'ubuntu':
@@ -358,7 +361,7 @@ class MdadmStatus( object ):
     # end def
 
     def SetValue( self, line ):
-        name, value = line.split(':')
+        name, value = line.split(':',1)
         name = name.strip(' ').replace('/','').replace(' ','_')
         value = value.strip(' ')
         setattr( self, name, value )
@@ -366,9 +369,17 @@ class MdadmStatus( object ):
     # end def
 
     def Update( self ):
+        currentTime = time.time()
+        if self.__LastUpdate == 0:
+            pass
+        elif self.__LastUpdate > currentTime - 10:
+            return
+        # end if
+        self.__LastUpdate = currentTime
         process = subprocess.Popen( [ "mdadm", "--detail-platform" ],
                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE )
         out, err = process.communicate()
+        out = err + out
         lines = out.splitlines( False )
         del lines[ 0 ]
         for line in lines:
@@ -381,16 +392,9 @@ class MdadmStatus( object ):
         self.UnusedDevices  = []
         self.Devices        = []
         DeviceList          = []
-        if 1:
-            print( '-' * 80 )
-            for line in mdstat:
-                print( line )
-            # next
-            print( '-' * 80 )
-        # end if
+
         for line in mdstat:
             cols = line.split(':')
-            #log.debug( "lines : %s" % ( repr( cols ) ) )
             if len( cols ) == 1:
                 # belongs to current device
                 data = cols[ 0 ].replace( '  ',  ' ' ).strip( ' ' ).split( ' ' )
@@ -489,7 +493,6 @@ class MdadmStatus( object ):
         startedMsg = "mdadm: array %s started." % ( dNname )
         out, err = self.__execute( cmd )
         if startedMsg in out:
-            log.debug( "Status: %s " % ( startedMsg ) )
             if monitor[ 0 ]:
                 out, err = self.__execute( [ 'mdadm', '--monitor', '--daemonize', '--mail=%s' % ( monitor[ 1 ] ), '--delay=1800', dNname ] )
                 if not "error" in out and err == "":
