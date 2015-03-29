@@ -1,0 +1,5 @@
+Version 1.0.0 Alpha
+* Improve speed of data collection.
+* Fix the add storage drive dialog in the active MD device view.
+* Dynamic add storage drive to grow the MD array
+* Show used/free space of MD device
