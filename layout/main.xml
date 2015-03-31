@@ -2,16 +2,16 @@
     <mdadm:header id="header">
         <right>
             <hc>
-                <button icon="refresh" id="onupdate" text="Update" />
+                <button icon="refresh" id="onupdate" text="Update"/>
             </hc>
         </right>
     </mdadm:header>
     <body id="body">
         <vc>
-            <inputdialog id="add-drive-device" text="{Device}" visible="False" />
+            <inputdialog id="add-drive-device" text="{Device}" visible="False"/>
             <tabs id="insert_tabs">
                 <tab title="{Create}">
-                    <include layout="mdadm:create" />
+                    <include layout="mdadm:create"/>
                 </tab>
             </tabs>
         </vc>

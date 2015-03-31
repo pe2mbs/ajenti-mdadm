@@ -1,6 +1,6 @@
 # coding=utf-8
 # ---------------------------------------------------------------------------
-#   MDADM plugin for Ajenti, to manage the MD devices.
+# MDADM plugin for Ajenti, to manage the MD devices.
 #
 #   Copyright (C) 2015 Marc Bertens <m.bertens@pe2mbs.nl>
 #
@@ -18,53 +18,57 @@
 # along with this program. If not, see http://www.gnu.org/licenses/agpl-3.0.html.
 # ---------------------------------------------------------------------------
 #
+import logging
+
 from ajenti.api import plugin
 from ajenti.api.sensors import Sensor
 from ajenti.plugins.dashboard.api import DashboardWidget
-import logging
-
 from api import getMdadmStatus
+
 
 log = logging.getLogger()
 
+
 @plugin
-class MdadmSensor( Sensor ):
+class MdadmSensor(Sensor):
     id = 'mdadm'
     timeout = 5
 
-    def measure( self, variant ):
+    def measure(self, variant):
         mdadm = getMdadmStatus()
         mdadm.Update()
         return mdadm
     # end def
+
+
 # end class
 
 @plugin
-class MdadmWidget( DashboardWidget ):
+class MdadmWidget(DashboardWidget):
     name = _('MDADM status')
     icon = 'hdd'
 
-    def init( self ):
-        self.sensor = Sensor.find( 'mdadm' )
-        self.append(self.ui.inflate( 'mdadm:mdadm-widget' ) )
-        self.find( 'icon' ).icon = 'hdd'
-        self.find( 'name' ).text = _( 'MDADM status' )
+    def init(self):
+        self.sensor = Sensor.find('mdadm')
+        self.append(self.ui.inflate('mdadm:mdadm-widget'))
+        self.find('icon').icon = 'hdd'
+        self.find('name').text = _('MDADM status')
 
         mdadm = self.sensor.value()
 
         for device in mdadm.Devices:
-            line    = self.ui.inflate( 'mdadm:mdadm-widget-line' )
-            line.find( 'device' ).text          = device.name
-            status              = line.find( 'status' )
-            progress            = line.find( 'progress' )
-            progress.visible    = ( device.showRecovery )
+            line = self.ui.inflate('mdadm:mdadm-widget-line')
+            line.find('device').text = device.name
+            status = line.find('status')
+            progress = line.find('progress')
+            progress.visible = ( device.showRecovery )
             if progress.visible:
-                log.debug( "progress.value: '%s' = '%s'" % ( device.progress, device.progress / 100 ) )
-                progress.value  = float( device.progress / 100 )
-                log.debug( "progress.value: '%f'" % ( progress.value ) )
+                log.debug("progress.value: '%s' = '%s'" % ( device.progress, device.progress / 100 ))
+                progress.value = float(device.progress / 100)
+                log.debug("progress.value: '%f'" % ( progress.value ))
             # end if
-            status.text     = device.stateText
-            self.find( 'lines' ).append( line )
+            status.text = device.stateText
+            self.find('lines').append(line)
         # next
     # end def
 # end class

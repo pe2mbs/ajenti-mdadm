@@ -3,12 +3,12 @@
         <ltd>
             <!-- The box's here are just for some "width" formating -->
             <box width="80">
-                <label text="Id" />
+                <label text="Id"/>
             </box>
         </ltd>
         <ltd>
             <box width="120">
-                <label bind="id" />
+                <label bind="id"/>
             </box>
         </ltd>
         <ltd>
@@ -66,7 +66,7 @@
     </ltr>
     <ltr>
         <ltd bind:visible="layout" bindtransform="lambda x: True if not x is None and x != '' else False">
-            <label text="Layout" />
+            <label text="Layout"/>
         </ltd>
         <ltd bind:visible="layout" bindtransform="lambda x: True if not x is None and x != '' else False">
             <label bind="layout"/>

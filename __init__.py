@@ -1,6 +1,6 @@
 # coding=utf-8
 # ---------------------------------------------------------------------------
-#   MDADM plugin for Ajenti, to manage the MD devices.
+# MDADM plugin for Ajenti, to manage the MD devices.
 #
 #   Copyright (C) 2015 Marc Bertens <m.bertens@pe2mbs.nl>
 #
@@ -18,64 +18,77 @@
 # along with this program. If not, see http://www.gnu.org/licenses/agpl-3.0.html.
 # ---------------------------------------------------------------------------
 #
-__author__      = "Marc Bertens"
-__copyright__   = "Copyright 2015, GNU Affero General Public License"
-__credits__     = ["Marc Bertens"]
-__license__     = "AGPL"
-__version__     = "1.0.0"
-__maintainer__  = "Marc Bertens"
-__email__       = "m.bertens@pe2mbs.nl"
-__status__      = "Alpha"
+__author__ = "Marc Bertens"
+__copyright__ = "Copyright 2015, GNU Affero General Public License"
+__credits__ = ["Marc Bertens"]
+__license__ = "AGPL"
+__version__ = "1.0.0"
+__maintainer__ = "Marc Bertens"
+__email__ = "m.bertens@pe2mbs.nl"
+__status__ = "Alpha"
 
 from ajenti.api import *
 from ajenti.plugins import *
 
 
 info = PluginInfo(
-    title           = 'MDADM',
-    description     = 'mdadm status display',
-    icon            = 'hdd',
-    dependencies    = [
-        PluginDependency( 'main' ),
-        BinaryDependency( 'mdadm' ),
-        FileDependency( '/proc/mdstat' ),
+    title='MDADM',
+    description='mdadm status display',
+    icon='hdd',
+    dependencies=[
+        PluginDependency('main'),
+        BinaryDependency('mdadm'),
+        FileDependency('/proc/mdstat'),
     ],
 )
 
+
 def GetVersion():
     return __version__
+
+
 # end def
 
 def GetAuthor():
     return __author__
+
+
 # end def
 
 def GetCopyright():
     return __copyright__
+
+
 # end def
 
 def GetMaintainer():
     return __maintainer__
+
+
 # end def
 
 def GetEmail():
     return __email__
+
+
 # end def
 
 def GetStatus():
     return __status__
+
+
 # end def
 
-def GetPluginVersion( package = None ):
+def GetPluginVersion(package=None):
     text = "v%s" % ( __version__ )
-    if not __status__ in [ "Production/Stable", "Mature" ]:
+    if not __status__ in ["Production/Stable", "Mature"]:
         text += " (%s)" % ( __status__ )
     # end if
     return text
+
+
 # end def
 
 def init():
-    import api
-    import main
-    import widget
+
 # end def
