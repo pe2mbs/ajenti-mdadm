@@ -37,6 +37,7 @@ info = PluginInfo(
     icon='hdd',
     dependencies=[
         PluginDependency('main'),
+        PluginDependency('uicommon'),
         BinaryDependency('mdadm'),
         FileDependency('/proc/mdstat'),
     ],
@@ -90,5 +91,7 @@ def GetPluginVersion(package=None):
 # end def
 
 def init():
-
+    import main
+    import api
+    import widget
 # end def
