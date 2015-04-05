@@ -18,6 +18,9 @@
 # along with this program. If not, see http://www.gnu.org/licenses/agpl-3.0.html.
 # ---------------------------------------------------------------------------
 #
+from ajenti.api import *
+from ajenti.plugins import *
+
 __author__ = "Marc Bertens"
 __copyright__ = "Copyright 2015, GNU Affero General Public License"
 __credits__ = ["Marc Bertens"]
@@ -26,10 +29,6 @@ __version__ = "1.0.0"
 __maintainer__ = "Marc Bertens"
 __email__ = "m.bertens@pe2mbs.nl"
 __status__ = "Alpha"
-
-from ajenti.api import *
-from ajenti.plugins import *
-
 
 info = PluginInfo(
     title='MDADM',
@@ -82,7 +81,7 @@ def GetStatus():
 
 def GetPluginVersion(package=None):
     text = "v%s" % ( __version__ )
-    if not __status__ in ["Production/Stable", "Mature"]:
+    if __status__ not in ["Production/Stable", "Mature"]:
         text += " (%s)" % ( __status__ )
     # end if
     return text

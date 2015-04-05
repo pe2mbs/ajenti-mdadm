@@ -190,7 +190,7 @@ class RAID(SectionPlugin):
                     break
                 # end if
             # next
-            if not device is None:
+            if device is not None:
                 # Now create the tab for it
                 tabs = self.find('insert_tabs')
 
@@ -276,10 +276,10 @@ class RAID(SectionPlugin):
     @on('add-drive-device', 'submit')
     def on_add_drive_device(self, value):
         err, out = self.mdadm.AddStorageDevice(self.addToRaid.name, value)
-        if not err is None and err <> "":
+        if err is not None and err != "":
             self.context.notify('error', err)
         # end if
-        if not out is None and out <> "":
+        if out is not None and out != "":
             self.context.notify('info', out)
         # end if
         self.refresh()
@@ -289,10 +289,10 @@ class RAID(SectionPlugin):
 
     def on_failDevice(self, device, drive):
         err, out = self.mdadm.FailStorageDevice(device.name, drive.name)
-        if not err is None and err <> "":
+        if err is not None and err != "":
             self.context.notify('error', err)
         # end if
-        if not out is None and out <> "":
+        if out is not None and out != "":
             self.context.notify('info', out)
         # end if
         self.refresh()
@@ -302,10 +302,10 @@ class RAID(SectionPlugin):
 
     def on_removeDevice(self, device, drive):
         err, out = self.mdadm.RemoveStorageDevice(device.name, drive.name)
-        if not err is None and err <> "":
+        if err is not None and err != "":
             self.context.notify('error', err)
         # end if
-        if not out is None and out <> "":
+        if out is not None and out != "":
             self.context.notify('info', out)
         # end if
         self.refresh()
@@ -321,10 +321,10 @@ class RAID(SectionPlugin):
 
     def refresh(self):
         for container, tab, binder in self.TabBinders:
-            if not tab is None:
+            if tab is not None:
                 container.Update()
             # end if
-            if not container is None:
+            if container is not None:
                 binder.setup(container).populate()
             # end if
         # next

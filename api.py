@@ -25,9 +25,7 @@ import logging
 
 import ajenti
 
-
 log = logging.getLogger()
-
 
 class RAID_Device(object):
     def __init__(self, mdadm):
@@ -39,6 +37,7 @@ class RAID_Device(object):
     # end def
 
 # end class
+
 
 class NewRaidDevice(object):
     def __init__(self, mdadm):
@@ -64,6 +63,7 @@ class NewRaidDevice(object):
     # end def
 
 # end class
+
 
 class BlockDevice(object):
     def __init__(self, items=None):
@@ -95,7 +95,7 @@ class BlockDevice(object):
         self.number = int(items[0])
         self.major = int(items[1])
         self.minor = int(items[2])
-        if items[3] <> '-':
+        if items[3] != '-':
             self.id = int(items[3])
         else:
             self.id = -1
@@ -122,7 +122,7 @@ class BlockDevice(object):
         out, err = process.communicate()
         lines = out.splitlines(False)
         for line in lines:
-            if line <> "":
+            if line != "":
                 cmd, value = line.split(':', 1)
                 cmd = cmd.strip(' ')
                 value = value.strip(' ')
@@ -167,6 +167,7 @@ class BlockDevice(object):
     # end def
 
 # end class
+
 
 class DeviceStatus(object):
     def __init__(self, name):
@@ -352,7 +353,7 @@ class DeviceStatus(object):
     def degraded(self):
         for idx in range(0, len(self.devices)):
             dev = self.devices[idx]
-            if not dev is None:
+            if dev is not None:
                 if dev.state in ["removed", "faulty"]:
                     return True
                 # end if
@@ -362,6 +363,7 @@ class DeviceStatus(object):
     # end def
 
 # end class
+
 
 class MdadmStatus(object):
     ubuntu_conf_location = '/etc/mdadm/mdadm.conf'
@@ -427,7 +429,7 @@ class MdadmStatus(object):
                     self.Personalities = data.split(' ')
                 elif cols[0] == 'unused devices':
                     data = cols[1].strip(' ')
-                    if data <> '<none>':
+                    if data != '<none>':
                         self.UnusedDevices = data.split(' ')
                         # end if
                 else:
@@ -526,7 +528,7 @@ class MdadmStatus(object):
             if monitor[0]:
                 out, err = self.__execute(
                     ['mdadm', '--monitor', '--daemonize', '--mail=%s' % ( monitor[1] ), '--delay=1800', dNname])
-                if not "error" in out and err == "":
+                if "error" not in out and err == "":
                     out, err = self.__execute(['mdadm', '--monitor', '--scan', '--test', '--oneshot'])
                 # end if
             # end if
@@ -549,10 +551,7 @@ class MdadmStatus(object):
 
 # end class
 
-
-
 mdadm = MdadmStatus()
-
 
 def getMdadmStatus():
     global mdadm
