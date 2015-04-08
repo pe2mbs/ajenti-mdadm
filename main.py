@@ -232,7 +232,7 @@ class RAID(SectionPlugin):
     def on_update_new(self, obj, coll, item):
         binder = self.TabBinders[0][2]
         binder.update()
-        binder.setup(obj).populate()
+        binder.setup( obj ).populate()
         return
 
     # end def
