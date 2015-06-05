@@ -27,7 +27,6 @@ from ajenti.ui import on, p, UIElement
 from ajenti.ui.binder import Binder
 from api import getMdadmStatus, RAID_Device, NewRaidDevice
 
-
 @plugin
 class RAID(SectionPlugin):
     platforms = ['debian']
@@ -329,7 +328,5 @@ class RAID(SectionPlugin):
             # end if
         # next
         return
-
     # end def
-
 # end class
