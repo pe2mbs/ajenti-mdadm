@@ -405,11 +405,15 @@ class MdadmStatus(object):
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         out = err + out
-        lines = out.splitlines(False)
-        del lines[0]
-        for line in lines:
-            self.SetValue(line)
-        # next
+        lines = out.splitlines( False )
+        if len( lines ) > 0:
+            del lines[0]
+            for line in lines:
+                self.SetValue(line)
+            # next
+        else:
+            self.IO_Controller = 'unknown'
+        # end if
         log.debug("I/O Controller: %s" % ( self.IO_Controller ))
 
         mdstat = open('/proc/mdstat').read().splitlines(False)
